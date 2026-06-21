@@ -6,51 +6,49 @@
     <title>Kingshot Tools</title>
     <style>
         body { font-family: sans-serif; max-width: 400px; margin: 20px auto; padding: 0 15px; }
-        textarea, input { width: 100%; margin-bottom: 10px; padding: 10px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; margin-bottom: 5px; }
-        .id-item { background: #f4f4f4; padding: 10px; margin: 5px 0; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
-        .redeem-btn { background: #28a745; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; }
-        .status { color: #28a745; font-size: 12px; margin-top: 5px; text-align: center; }
+        .box { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+        textarea, input { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; margin-top: 5px; }
+        .id-item { background: #f4f4f4; padding: 10px; margin: 5px 0; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
+        .copy-btn { background: #6c757d; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-size: 12px; }
     </style>
 </head>
 <body>
 
     <h2>Kingshot Tools</h2>
-    <input type="text" id="giftCode" placeholder="請先輸入 Gift Code">
-    <textarea id="idInput" placeholder="輸入 Player ID (換行或空格分隔)"></textarea>
-    <button onclick="addIds()">新增 ID</button>
-
-    <div id="idList">
-        <h3>已儲存的 ID (點 ID 刪除):</h3>
+    
+    <div class="box">
+        <label>1. 輸入 Gift Code (複製好備用)</label>
+        <input type="text" id="giftCode" placeholder="請貼上禮包碼">
     </div>
+
+    <div class="box">
+        <textarea id="idInput" placeholder="輸入多個 Player ID (換行分隔)"></textarea>
+        <button onclick="addIds()">新增 ID 列表</button>
+    </div>
+
+    <div id="idList"></div>
 
     <script>
         const REDEEM_URL = "https://ks-giftcode.centurygame.com/";
-
         let ids = JSON.parse(localStorage.getItem('kingshotIds')) || [];
 
         function render() {
             const list = document.getElementById('idList');
-            list.innerHTML = '<h3>已儲存的 ID (點 ID 刪除):</h3>';
+            list.innerHTML = '<h3>ID 列表 (點擊複製 ID):</h3>';
             ids.forEach((id, index) => {
                 const div = document.createElement('div');
                 div.className = 'id-item';
-                div.innerHTML = `<span onclick="removeId(${index})" style="cursor:pointer">${id}</span> 
-                                 <button class="redeem-btn" onclick="redeem('${id}')">複製並前往</button>`;
+                div.innerHTML = `<span>${id}</span> 
+                                 <button class="copy-btn" onclick="copyAndOpen('${id}')">複製 ID 並前往</button>`;
+                div.oncontextmenu = (e) => { e.preventDefault(); removeId(index); }; // 右鍵點擊刪除
                 list.appendChild(div);
             });
             localStorage.setItem('kingshotIds', JSON.stringify(ids));
         }
 
-        async function redeem(id) {
-            const code = document.getElementById('giftCode').value;
-            if (!code) { alert("請先在上方輸入 Gift Code！"); return; }
-            
-            // 1. 複製 ID 到剪貼簿
+        async function copyAndOpen(id) {
             await navigator.clipboard.writeText(id);
-            alert(`已複製 ID: ${id} \n\n前往官網後，請按下 Ctrl+V (或貼上) 即可！`);
-            
-            // 2. 開啟官網
             window.open(REDEEM_URL, '_blank');
         }
 
@@ -62,7 +60,7 @@
             render();
         }
 
-        function removeId(index) { if(confirm("確定刪除此 ID?")) { ids.splice(index, 1); render(); } }
+        function removeId(index) { if(confirm("刪除此 ID?")) { ids.splice(index, 1); render(); } }
         render();
     </script>
 </body>
